@@ -31,9 +31,9 @@ def label_filter_only_13(labels):
         return False
 
 kwargs = {
-    'num_train_samples': 30000,
-    'num_test_samples': 5000,
-    'num_test_b_samples': 5000,
+    'num_train_samples': 1000,
+    'num_test_samples': 200,
+    'num_test_b_samples': 200,
     'image_shape': (60, 60),
     'min_num_digits_per_image': 3,
     'max_num_digits_per_image': 3,
@@ -47,7 +47,7 @@ non_json_kwargs = {
     'condition_b_label_filter_function': label_filter_only_13
 }
 
-dataset_name = "exclude13"
+dataset_name = "mini_exclude13"
 
 train_a_x, train_a_y, train_a_z, test_a_x, test_a_y, test_a_z, test_b_x, test_b_y, test_b_z = create_semantic_segmentation_dataset(**kwargs, **non_json_kwargs)
 
