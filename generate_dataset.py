@@ -7,8 +7,8 @@ from simple_deep_learning.mnist_extended.semantic_segmentation import create_sem
 # Let's generate 30,000 training images and 5,000 test images
 
 kwargs = {
-    'num_train_samples': 30000,
-    'num_test_samples': 5000,
+    'num_train_samples': 500,
+    'num_test_samples': 100,
     'image_shape': (60, 60),
     'min_num_digits_per_image': 3,
     'max_num_digits_per_image': 3,
@@ -17,6 +17,8 @@ kwargs = {
     'duplicate_digits': False
 }
 
+dataset_name = "mini_dataset"
+
 train_x, train_y, train_z, test_x, test_y, test_z = create_semantic_segmentation_dataset(**kwargs)
 
 # Save training images
@@ -24,25 +26,25 @@ for i in range(len(train_x)):
     grayscale_image = (train_x[i] * 255).astype(np.uint8)
     grayscale_image = np.squeeze(grayscale_image, axis=2)
     pil_image = Image.fromarray(grayscale_image, mode='L')
-    pil_image.save(f'/users/bspiegel/data/bspiegel/extended-mnist/dataset1/train/image_{i}.png')
+    pil_image.save(f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/train/training_image_{i}.png')
 
 # Save testing images
 for i in range(len(test_x)):
     grayscale_image = (test_x[i] * 255).astype(np.uint8)
     grayscale_image = np.squeeze(grayscale_image, axis=2)
     pil_image = Image.fromarray(grayscale_image, mode='L')
-    pil_image.save(f'/users/bspiegel/data/bspiegel/extended-mnist/dataset1/test/image_{i}.png')
+    pil_image.save(f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/test/testing_image_{i}.png')
 
 # Save generation args as json file
-file_path = '/users/bspiegel/data/bspiegel/extended-mnist/dataset1/config.json'  # Specify the path and filename for the JSON file
+file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/config.json'  # Specify the path and filename for the JSON file
 with open(file_path, 'w') as json_file:
     json.dump(kwargs, json_file)
 
 # Pickle z labels
-file_path = '/users/bspiegel/data/bspiegel/extended-mnist/dataset1/train_labels.pkl'  # Specify the path and filename for the pickle file
+file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/train_labels.pkl'  # Specify the path and filename for the pickle file
 with open(file_path, 'wb') as file:
     pickle.dump(train_z, file)
-file_path = '/users/bspiegel/data/bspiegel/extended-mnist/dataset1/test_labels.pkl'  # Specify the path and filename for the pickle file
+file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/test_labels.pkl'  # Specify the path and filename for the pickle file
 with open(file_path, 'wb') as file:
     pickle.dump(test_z, file)
 

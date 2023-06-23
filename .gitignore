@@ -22,4 +22,6 @@ models/
 # Directory with old files
 .archive
 
+output/
+
 
