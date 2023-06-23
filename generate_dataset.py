@@ -6,9 +6,22 @@ from simple_deep_learning.mnist_extended.semantic_segmentation import create_sem
 
 # Let's generate 30,000 training images and 5,000 test images
 
+def label_filter_no_04(labels):
+    if 0 in labels and 4 in labels:
+        return False
+    else:
+        return True
+
+def label_filter_only_04(labels):
+    if 0 in labels and 4 in labels:
+        return True
+    else:
+        return False
+
 kwargs = {
-    'num_train_samples': 500,
-    'num_test_samples': 100,
+    'num_train_samples': 30000,
+    'num_test_samples': 5000,
+    'num_test_b_samples': 5000,
     'image_shape': (60, 60),
     'min_num_digits_per_image': 3,
     'max_num_digits_per_image': 3,
@@ -17,23 +30,34 @@ kwargs = {
     'duplicate_digits': False
 }
 
-dataset_name = "mini_dataset"
+non_json_kwargs = {
+    'condition_a_label_filter_function': label_filter_no_04,
+    'condition_b_label_filter_function': label_filter_only_04
+}
 
-train_x, train_y, train_z, test_x, test_y, test_z = create_semantic_segmentation_dataset(**kwargs)
+dataset_name = "exclude04"
+
+train_a_x, train_a_y, train_a_z, test_a_x, test_a_y, test_a_z, test_b_x, test_b_y, test_b_z = create_semantic_segmentation_dataset(**kwargs, **non_json_kwargs)
 
 # Save training images
-for i in range(len(train_x)):
-    grayscale_image = (train_x[i] * 255).astype(np.uint8)
+for i in range(len(train_a_x)):
+    grayscale_image = (train_a_x[i] * 255).astype(np.uint8)
     grayscale_image = np.squeeze(grayscale_image, axis=2)
     pil_image = Image.fromarray(grayscale_image, mode='L')
-    pil_image.save(f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/train/training_image_{i}.png')
+    pil_image.save(f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/train/image_{i}.png')
 
 # Save testing images
-for i in range(len(test_x)):
-    grayscale_image = (test_x[i] * 255).astype(np.uint8)
+for i in range(len(test_a_x)):
+    grayscale_image = (test_a_x[i] * 255).astype(np.uint8)
     grayscale_image = np.squeeze(grayscale_image, axis=2)
     pil_image = Image.fromarray(grayscale_image, mode='L')
-    pil_image.save(f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/test/testing_image_{i}.png')
+    pil_image.save(f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/testa/image_{i}.png')
+
+for i in range(len(test_b_x)):
+    grayscale_image = (test_b_x[i] * 255).astype(np.uint8)
+    grayscale_image = np.squeeze(grayscale_image, axis=2)
+    pil_image = Image.fromarray(grayscale_image, mode='L')
+    pil_image.save(f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/testb/image_{i}.png')
 
 # Save generation args as json file
 file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/config.json'  # Specify the path and filename for the JSON file
@@ -43,10 +67,13 @@ with open(file_path, 'w') as json_file:
 # Pickle z labels
 file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/train_labels.pkl'  # Specify the path and filename for the pickle file
 with open(file_path, 'wb') as file:
-    pickle.dump(train_z, file)
+    pickle.dump(train_a_z, file)
 file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/test_labels.pkl'  # Specify the path and filename for the pickle file
 with open(file_path, 'wb') as file:
-    pickle.dump(test_z, file)
+    pickle.dump(test_a_z, file)
+file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/test_b_labels.pkl'  # Specify the path and filename for the pickle file
+with open(file_path, 'wb') as file:
+    pickle.dump(test_b_z, file)
 
 
 # Visualize y labels
@@ -63,3 +90,9 @@ with open(file_path, 'wb') as file:
 #     pil_image = Image.fromarray(grayscale_image, mode='L')
 #     # Save the image
 #     pil_image.save(f'grayscale_image_{i}.png')
+
+# You may need to run this command if tensorflow is not seeing CUDA:
+# module load cuda/11.7.1 cudnn/8.2.0
+
+# Verify CUDA with:
+# tf.test.is_gpu_available(cuda_only=False, min_cuda_compute_capability=None)
