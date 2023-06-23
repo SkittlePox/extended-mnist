@@ -62,7 +62,7 @@ def create_semantic_segmentation_dataset(num_train_samples: int, num_test_sample
     test_images, test_labels = preprocess_mnist(images=test_images, labels=test_labels, proportion=proportion_of_mnist,
                                                 num_classes=num_classes, normalise=True)
 
-    train_x, train_y = create_semantic_segmentation_data_from_digits(
+    train_x, train_y, train_z = create_semantic_segmentation_data_from_digits(
         digits=train_images, digit_labels=train_labels,
         num_samples=num_train_samples,
         image_shape=image_shape,
@@ -73,7 +73,7 @@ def create_semantic_segmentation_dataset(num_train_samples: int, num_test_sample
         target_is_whole_bounding_box=target_is_whole_bounding_box,
         duplicate_digits=duplicate_digits)
 
-    test_x, test_y = create_semantic_segmentation_data_from_digits(
+    test_x, test_y, test_z = create_semantic_segmentation_data_from_digits(
         digits=test_images, digit_labels=test_labels,
         num_samples=num_test_samples, image_shape=image_shape,
         min_num_digits_per_image=min_num_digits_per_image,
@@ -83,7 +83,7 @@ def create_semantic_segmentation_dataset(num_train_samples: int, num_test_sample
         target_is_whole_bounding_box=target_is_whole_bounding_box,
         duplicate_digits=duplicate_digits)
 
-    return train_x, train_y, test_x, test_y
+    return train_x, train_y, train_z, test_x, test_y, test_z
 
 
 def create_semantic_segmentation_data_from_digits(digits: np.ndarray,
@@ -130,12 +130,13 @@ def create_semantic_segmentation_data_from_digits(digits: np.ndarray,
 
     input_data = []
     target_data = []
+    label_data = []
 
     for _ in range(num_samples):
         num_digits = np.random.randint(
             min_num_digits_per_image, max_num_digits_per_image + 1)
 
-        input_array, arrays_overlaid, labels_overlaid, bounding_boxes_overlaid = overlay_arrays(
+        input_array, arrays_overlaid, labels_overlaid, bounding_boxes_overlaid, label_list = overlay_arrays(
             array_shape=image_shape + (1, ),
             input_arrays=digits,
             input_labels=digit_labels,
@@ -151,14 +152,21 @@ def create_semantic_segmentation_data_from_digits(digits: np.ndarray,
                                                   num_classes=num_classes,
                                                   labels_are_exclusive=labels_are_exclusive,
                                                   target_is_whole_bounding_box=target_is_whole_bounding_box)
+        
+        # I need to turn label list into a binary numpy array corresponding to the label index.
+        label = np.zeros(num_classes)
+        for l in label_list:
+            label[l] = 1
 
         input_data.append(input_array)
         target_data.append(target_array)
+        label_data.append(label)
 
     input_data = np.stack(input_data)
     target_data = np.stack(target_data)
+    label_data = np.stack(label_data)
 
-    return input_data, target_data
+    return input_data, target_data, label_data
 
 
 def create_segmentation_target(images: np.ndarray,

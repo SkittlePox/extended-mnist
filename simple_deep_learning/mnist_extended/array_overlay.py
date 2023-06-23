@@ -45,10 +45,12 @@ def overlay_arrays(array_shape: tuple,
     output_array = np.zeros(array_shape)
 
     indices = []
+    label_list = []
 
     if duplicate_digits:
         indices = np.random.randint(
             len(input_arrays), size=num_input_arrays_to_overlay)
+        label_list = [input_labels[i] for i in indices]
     else:
         label_list = []
         while len(indices) < num_input_arrays_to_overlay:
@@ -77,8 +79,8 @@ def overlay_arrays(array_shape: tuple,
             max_array_value=max_array_value,
             bounding_boxes=bounding_boxes, max_iou=max_iou)
 
-        if bounding_box is None:
-            break
+        if bounding_box is None:    # This forces a new generation process if we can't fit a digit in the image.
+            return overlay_arrays(array_shape, input_arrays, input_labels, num_input_arrays_to_overlay, max_array_value, max_iou, duplicate_digits)
 
         indices_overlaid.append(i)
 
@@ -90,7 +92,7 @@ def overlay_arrays(array_shape: tuple,
     labels_overlaid = input_labels[indices_overlaid]
     bounding_boxes_overlaid = np.stack(bounding_boxes_as_tuple)
 
-    return output_array, arrays_overlaid, labels_overlaid, bounding_boxes_overlaid
+    return output_array, arrays_overlaid, labels_overlaid, bounding_boxes_overlaid, label_list
 
 
 def overlay_at_random(array1: np.ndarray, array2: np.ndarray,
