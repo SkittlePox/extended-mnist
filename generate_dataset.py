@@ -17,6 +17,18 @@ def label_filter_only_04(labels):
         return True
     else:
         return False
+    
+def label_filter_no_13(labels):
+    if 1 in labels and 3 in labels:
+        return False
+    else:
+        return True
+
+def label_filter_only_13(labels):
+    if 1 in labels and 3 in labels:
+        return True
+    else:
+        return False
 
 kwargs = {
     'num_train_samples': 30000,
@@ -31,11 +43,11 @@ kwargs = {
 }
 
 non_json_kwargs = {
-    'condition_a_label_filter_function': label_filter_no_04,
-    'condition_b_label_filter_function': label_filter_only_04
+    'condition_a_label_filter_function': label_filter_no_13,
+    'condition_b_label_filter_function': label_filter_only_13
 }
 
-dataset_name = "exclude04"
+dataset_name = "exclude13"
 
 train_a_x, train_a_y, train_a_z, test_a_x, test_a_y, test_a_z, test_b_x, test_b_y, test_b_z = create_semantic_segmentation_dataset(**kwargs, **non_json_kwargs)
 
@@ -68,7 +80,7 @@ with open(file_path, 'w') as json_file:
 file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/train_labels.pkl'  # Specify the path and filename for the pickle file
 with open(file_path, 'wb') as file:
     pickle.dump(train_a_z, file)
-file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/test_labels.pkl'  # Specify the path and filename for the pickle file
+file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/test_a_labels.pkl'  # Specify the path and filename for the pickle file
 with open(file_path, 'wb') as file:
     pickle.dump(test_a_z, file)
 file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/test_b_labels.pkl'  # Specify the path and filename for the pickle file
