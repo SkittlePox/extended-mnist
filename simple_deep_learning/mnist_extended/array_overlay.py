@@ -14,6 +14,7 @@ def overlay_arrays(array_shape: tuple,
                    num_input_arrays_to_overlay: int,
                    max_array_value: int,
                    max_iou: float = 0.2,
+                   duplicate_digits: bool = True,
                    ):
     """Generate an array by overlaying multiple smaller arrays onto a blank one.
 
@@ -31,6 +32,7 @@ def overlay_arrays(array_shape: tuple,
             Any number larger than this will be clipped.
             Clipping is necessary because the overlaying is done by summing arrays.
         max_iou: The maximum allowed IOU between two overlaid arrays.
+        duplicate_digits: If true, multiple of the same digit class can appear in an image.
 
     Returns:
         output_array: The output array of size array_shape.
@@ -42,8 +44,30 @@ def overlay_arrays(array_shape: tuple,
 
     output_array = np.zeros(array_shape)
 
-    indices = np.random.randint(
-        len(input_arrays), size=num_input_arrays_to_overlay)
+    indices = []
+
+    if duplicate_digits:
+        indices = np.random.randint(
+            len(input_arrays), size=num_input_arrays_to_overlay)
+    else:
+        label_list = []
+        while len(indices) < num_input_arrays_to_overlay:
+            # randomly sample an index, then check if it is present in the label list. If it is not, add to the list.
+            possible_index = np.random.randint(len(input_arrays))
+            if input_labels[possible_index] not in label_list:
+                label_list.append(input_labels[possible_index])
+                indices.append(possible_index)
+
+    # The below code verifies that there are no duplicate digits
+    # dupe_label_list = []
+    # for i in indices:
+    #     this_label = input_labels[i]
+    #     if this_label in dupe_label_list:
+    #         print("Bad")
+    #         break
+    #     else:
+    #         dupe_label_list.append(this_label)
+
     bounding_boxes = []
     bounding_boxes_as_tuple = []
     indices_overlaid = []
