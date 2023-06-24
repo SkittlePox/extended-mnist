@@ -29,11 +29,36 @@ def label_filter_only_13(labels):
         return True
     else:
         return False
+    
+def label_filter_no_23(labels):
+    if 2 in labels and 3 in labels:
+        return False
+    else:
+        return True
+
+def label_filter_only_23(labels):
+    if 2 in labels and 3 in labels:
+        return True
+    else:
+        return False
+    
+def label_filter_fn_generator(include=None, exclude=None):
+    def generated_filter(labels):
+        if include is not None:
+            for label in include:
+                if label not in labels:
+                    return False
+        if exclude is not None:
+            for label in exclude:
+                if label in labels:
+                    return False
+        return True
+    return generated_filter
 
 kwargs = {
-    'num_train_samples': 1000,
-    'num_test_samples': 200,
-    'num_test_b_samples': 200,
+    'num_train_samples': 30000,
+    'num_test_samples': 5000,
+    'num_test_b_samples': 5000,
     'image_shape': (60, 60),
     'min_num_digits_per_image': 3,
     'max_num_digits_per_image': 3,
@@ -43,11 +68,11 @@ kwargs = {
 }
 
 non_json_kwargs = {
-    'condition_a_label_filter_function': label_filter_no_13,
-    'condition_b_label_filter_function': label_filter_only_13
+    'condition_a_label_filter_function': label_filter_no_23,
+    'condition_b_label_filter_function': label_filter_only_23
 }
 
-dataset_name = "mini_exclude13"
+dataset_name = "exclude23"
 
 train_a_x, train_a_y, train_a_z, test_a_x, test_a_y, test_a_z, test_b_x, test_b_y, test_b_z = create_semantic_segmentation_dataset(**kwargs, **non_json_kwargs)
 

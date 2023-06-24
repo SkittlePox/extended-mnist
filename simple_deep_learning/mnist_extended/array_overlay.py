@@ -15,7 +15,8 @@ def overlay_arrays(array_shape: tuple,
                    max_array_value: int,
                    max_iou: float = 0.2,
                    duplicate_digits: bool = True,
-                   label_filter_function = None
+                   label_filter_function = None,
+                   prescribed_indices_and_labels = None
                    ):
     """Generate an array by overlaying multiple smaller arrays onto a blank one.
 
@@ -48,8 +49,12 @@ def overlay_arrays(array_shape: tuple,
 
     output_array = np.zeros(array_shape)
 
-    indices = []
-    label_list = []
+    if prescribed_indices_and_labels is not None:
+        indices, label_list = prescribed_indices_and_labels
+        print(prescribed_indices_and_labels)
+    else:
+        indices = []
+        label_list = []
 
     if duplicate_digits:
         indices = np.random.randint(
@@ -66,6 +71,8 @@ def overlay_arrays(array_shape: tuple,
                 if input_labels[possible_index] not in label_list:
                     label_list.append(input_labels[possible_index])
                     indices.append(possible_index)
+    
+    print(indices, label_list)
 
     # The below code verifies that there are no duplicate digits
     # dupe_label_list = []
@@ -87,7 +94,7 @@ def overlay_arrays(array_shape: tuple,
             bounding_boxes=bounding_boxes, max_iou=max_iou)
 
         if bounding_box is None:    # This forces a new generation process if we can't fit a digit in the image.
-            return overlay_arrays(array_shape, input_arrays, input_labels, num_input_arrays_to_overlay, max_array_value, max_iou, duplicate_digits, label_filter_function=label_filter_function)
+            return overlay_arrays(array_shape, input_arrays, input_labels, num_input_arrays_to_overlay, max_array_value, max_iou, duplicate_digits, label_filter_function=label_filter_function, prescribed_indices_and_labels=(indices, label_list))
 
         indices_overlaid.append(i)
 
