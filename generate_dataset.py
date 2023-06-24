@@ -56,9 +56,9 @@ def label_filter_fn_generator(include=None, exclude=None):
     return generated_filter
 
 kwargs = {
-    'num_train_samples': 30000,
-    'num_test_samples': 5000,
-    'num_test_b_samples': 5000,
+    'num_train_samples': 100,
+    'num_test_samples': 100,
+    'num_test_b_samples': 100,
     'image_shape': (60, 60),
     'min_num_digits_per_image': 3,
     'max_num_digits_per_image': 3,
@@ -72,7 +72,7 @@ non_json_kwargs = {
     'condition_b_label_filter_function': label_filter_only_23
 }
 
-dataset_name = "exclude23"
+dataset_name = "test"
 
 train_a_x, train_a_y, train_a_z, test_a_x, test_a_y, test_a_z, test_b_x, test_b_y, test_b_z = create_semantic_segmentation_dataset(**kwargs, **non_json_kwargs)
 
@@ -130,6 +130,6 @@ with open(file_path, 'wb') as file:
 
 # You may need to run this command if tensorflow is not seeing CUDA:
 # module load cuda/11.7.1 cudnn/8.2.0
-
+#
 # Verify CUDA with:
 # tf.test.is_gpu_available(cuda_only=False, min_cuda_compute_capability=None)

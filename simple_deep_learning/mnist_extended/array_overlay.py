@@ -51,7 +51,6 @@ def overlay_arrays(array_shape: tuple,
 
     if prescribed_indices_and_labels is not None:
         indices, label_list = prescribed_indices_and_labels
-        print(prescribed_indices_and_labels)
     else:
         indices = []
         label_list = []
@@ -61,7 +60,6 @@ def overlay_arrays(array_shape: tuple,
             len(input_arrays), size=num_input_arrays_to_overlay)
         label_list = [input_labels[i] for i in indices]
     else:
-        label_list = []
         while len(label_list) == 0 or not label_filter_function(label_list):    # While the label_filter_function has not been satisfied...
             label_list = []
             indices = []
@@ -71,8 +69,6 @@ def overlay_arrays(array_shape: tuple,
                 if input_labels[possible_index] not in label_list:
                     label_list.append(input_labels[possible_index])
                     indices.append(possible_index)
-    
-    print(indices, label_list)
 
     # The below code verifies that there are no duplicate digits
     # dupe_label_list = []
