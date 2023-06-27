@@ -66,27 +66,9 @@ def label_filter_fn_generator(include=None, exclude=None):
         return True
     return generated_filter
 
-kwargs = {
-    'num_train_samples': 30000,
-    'num_test_samples': 5000,
-    'num_test_b_samples': 5000,
-    'image_shape': (60, 60),
-    'min_num_digits_per_image': 3,
-    'max_num_digits_per_image': 3,
-    'num_classes': 5,
-    'max_iou': 0.1,
-    'duplicate_digits': False
-}
 
-non_json_kwargs = {
-    'condition_a_label_filter_function': label_filter_no_13,
-    'condition_b_label_filter_function': label_filter_only_13
-}
-
-dataset_name = "exclude13_balanced"
-
-def generate():
-    train_a_x, train_a_y, train_a_z, test_a_x, test_a_y, test_a_z, test_b_x, test_b_y, test_b_z = create_semantic_segmentation_dataset(**kwargs, **non_json_kwargs)
+def generate(dataset_name, condition_a_label_filter_function, condition_b_label_filter_function, kwargs):
+    train_a_x, train_a_y, train_a_z, test_a_x, test_a_y, test_a_z, test_b_x, test_b_y, test_b_z = create_semantic_segmentation_dataset(**kwargs, condition_a_label_filter_function=condition_a_label_filter_function, condition_b_label_filter_function=condition_b_label_filter_function)
 
     # Save training images
     for i in range(len(train_a_x)):
@@ -148,4 +130,45 @@ def generate():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Extended MNIST dataset generation tool.')
+    parser.add_argument('--dataset_name', type=str, default='exclude13b', help='Name of the dataset to generate.', required=True)
+
+    parser.add_argument('--exclude', type=list, default=None, help='List of digits to exclude from the training dataset and test a dataset, to be put into the test b dataset.', required=True)
+    parser.add_argument('--duplicate_digits', type=bool, default=False, help='Allow duplicate digits in the same image.', required=False)
+    parser.add_argument('--max_iou', type=float, default=0.1, help='Maximum IOU between digits.', required=False)
+    parser.add_argument('--num_classes', type=int, default=5, help='Number of classes to generate.', required=False)
+    parser.add_argument('--min_num_digits_per_image', type=int, default=3, help='Minimum number of digits per image.', required=False)
+    parser.add_argument('--max_num_digits_per_image', type=int, default=3, help='Maximum number of digits per image.', required=False)    
+    parser.add_argument('--image_shape', type=tuple, default=(60, 60), help='Shape of the images to generate.', required=False)
+    parser.add_argument('--num_train_samples', type=int, default=30000, help='Number of training samples to generate.', required=False)
+    parser.add_argument('--num_test_samples', type=int, default=5000, help='Number of testing samples to generate.', required=False)
+    parser.add_argument('--num_test_b_samples', type=int, default=5000, help='Number of testing samples to generate.', required=False)
+
+    args = vars(parser.parse_args())
+
+    # kwargs = {
+    #     'num_train_samples': 30000,
+    #     'num_test_samples': 5000,
+    #     'num_test_b_samples': 5000,
+    #     'image_shape': (60, 60),
+    #     'min_num_digits_per_image': 3,
+    #     'max_num_digits_per_image': 3,
+    #     'num_classes': 5,
+    #     'max_iou': 0.1,
+    #     'duplicate_digits': False
+    # }
+
+    non_json_kwargs = {
+        'condition_a_label_filter_function': label_filter_no_13,
+        'condition_b_label_filter_function': label_filter_only_13
+    }
+
+    # Generate the appropriate filter functions according to the exclude list
+    if args['exclude'] is not None:
+        args['exclude'] = [int(x) for x in args['exclude']]
+        print(args['exclude'])
+        non_json_kwargs['condition_a_label_filter_function'] = label_filter_fn_generator(args['exclude'])
+        non_json_kwargs['condition_b_label_filter_function'] = label_filter_fn_generator(args['exclude'])
+
+    print(args)
+    print(args['dataset_name'], **non_json_kwargs, args)
     
