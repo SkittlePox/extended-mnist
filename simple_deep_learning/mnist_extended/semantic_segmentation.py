@@ -15,7 +15,7 @@ from .mnist import preprocess_mnist, download_mnist
 plt.rcParams['figure.facecolor'] = 'white'
 
 
-def create_semantic_segmentation_dataset(num_train_samples: int, num_test_samples: int,
+def create_semantic_segmentation_dataset(num_train_samples: int, num_test_samples: int, num_test_b_samples: int,
                                          image_shape: Tuple[int, int] = (60, 60),
                                          min_num_digits_per_image: int = 2,
                                          max_num_digits_per_image: int = 4,
@@ -25,6 +25,8 @@ def create_semantic_segmentation_dataset(num_train_samples: int, num_test_sample
                                          target_is_whole_bounding_box: bool = False,
                                          proportion_of_mnist: float = 1.0,
                                          duplicate_digits: bool = True,
+                                         condition_a_label_filter_function = None,
+                                         condition_b_label_filter_function = None
                                          ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Create the extended mnist dataset for semantic segmentation.
 
@@ -62,7 +64,7 @@ def create_semantic_segmentation_dataset(num_train_samples: int, num_test_sample
     test_images, test_labels = preprocess_mnist(images=test_images, labels=test_labels, proportion=proportion_of_mnist,
                                                 num_classes=num_classes, normalise=True)
 
-    train_x, train_y, train_z = create_semantic_segmentation_data_from_digits(
+    train_a_x, train_a_y, train_a_z = create_semantic_segmentation_data_from_digits(
         digits=train_images, digit_labels=train_labels,
         num_samples=num_train_samples,
         image_shape=image_shape,
@@ -71,9 +73,10 @@ def create_semantic_segmentation_dataset(num_train_samples: int, num_test_sample
         num_classes=num_classes, max_iou=max_iou,
         labels_are_exclusive=labels_are_exclusive,
         target_is_whole_bounding_box=target_is_whole_bounding_box,
-        duplicate_digits=duplicate_digits)
+        duplicate_digits=duplicate_digits,
+        label_filter_function=condition_a_label_filter_function)
 
-    test_x, test_y, test_z = create_semantic_segmentation_data_from_digits(
+    test_a_x, test_a_y, test_a_z = create_semantic_segmentation_data_from_digits(
         digits=test_images, digit_labels=test_labels,
         num_samples=num_test_samples, image_shape=image_shape,
         min_num_digits_per_image=min_num_digits_per_image,
@@ -81,9 +84,21 @@ def create_semantic_segmentation_dataset(num_train_samples: int, num_test_sample
         num_classes=num_classes, max_iou=max_iou,
         labels_are_exclusive=labels_are_exclusive,
         target_is_whole_bounding_box=target_is_whole_bounding_box,
-        duplicate_digits=duplicate_digits)
+        duplicate_digits=duplicate_digits,
+        label_filter_function=condition_a_label_filter_function)
+    
+    test_b_x, test_b_y, test_b_z = create_semantic_segmentation_data_from_digits(
+        digits=test_images, digit_labels=test_labels,
+        num_samples=num_test_b_samples, image_shape=image_shape,
+        min_num_digits_per_image=min_num_digits_per_image,
+        max_num_digits_per_image=max_num_digits_per_image,
+        num_classes=num_classes, max_iou=max_iou,
+        labels_are_exclusive=labels_are_exclusive,
+        target_is_whole_bounding_box=target_is_whole_bounding_box,
+        duplicate_digits=duplicate_digits,
+        label_filter_function=condition_b_label_filter_function)
 
-    return train_x, train_y, train_z, test_x, test_y, test_z
+    return train_a_x, train_a_y, train_a_z, test_a_x, test_a_y, test_a_z, test_b_x, test_b_y, test_b_z
 
 
 def create_semantic_segmentation_data_from_digits(digits: np.ndarray,
@@ -97,6 +112,7 @@ def create_semantic_segmentation_data_from_digits(digits: np.ndarray,
                                                   labels_are_exclusive: bool = False,
                                                   target_is_whole_bounding_box: bool = False,
                                                   duplicate_digits: bool = True,
+                                                  label_filter_function = None
                                                   ) -> Tuple[np.ndarray, np.ndarray]:
     """Create the extended MNIST data (either train or test) for semantic segmentation
         from the provided MNIST digits and labels.
@@ -143,7 +159,8 @@ def create_semantic_segmentation_data_from_digits(digits: np.ndarray,
             max_array_value=1,
             num_input_arrays_to_overlay=num_digits,
             max_iou=max_iou,
-            duplicate_digits=duplicate_digits)
+            duplicate_digits=duplicate_digits,
+            label_filter_function=label_filter_function)
 
         target_array = create_segmentation_target(images=arrays_overlaid,
                                                   labels=labels_overlaid,
