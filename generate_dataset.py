@@ -18,31 +18,7 @@ def label_filter_only_04(labels):
         return True
     else:
         return False
-    
-def label_filter_no_13(labels):
-    if 1 in labels and 3 in labels:
-        return False
-    else:
-        return True
 
-def label_filter_only_13(labels):
-    if 1 in labels and 3 in labels:
-        return True
-    else:
-        return False
-    
-def label_filter_no_23(labels):
-    if 2 in labels and 3 in labels:
-        return False
-    else:
-        return True
-
-def label_filter_only_23(labels):
-    if 2 in labels and 3 in labels:
-        return True
-    else:
-        return False
-    
 def label_filter_fn_generator(include=None, exclude=None):
     def generated_filter(labels):
         if include is not None:
@@ -68,6 +44,14 @@ def label_filter_fn_generator(include=None, exclude=None):
 
 
 def generate(dataset_name, condition_a_label_filter_function, condition_b_label_filter_function, kwargs):
+    # Save generation args as json file
+    file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/config.json'  # Specify the path and filename for the JSON file
+    with open(file_path, 'w') as json_file:
+        json.dump(kwargs, json_file)
+
+    del kwargs['dataset_name']
+    del kwargs['exclude']
+
     train_a_x, train_a_y, train_a_z, test_a_x, test_a_y, test_a_z, test_b_x, test_b_y, test_b_z = create_semantic_segmentation_dataset(**kwargs, condition_a_label_filter_function=condition_a_label_filter_function, condition_b_label_filter_function=condition_b_label_filter_function)
 
     # Save training images
@@ -89,11 +73,6 @@ def generate(dataset_name, condition_a_label_filter_function, condition_b_label_
         grayscale_image = np.squeeze(grayscale_image, axis=2)
         pil_image = Image.fromarray(grayscale_image, mode='L')
         pil_image.save(f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/testb/image_{i}.png')
-
-    # Save generation args as json file
-    file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/config.json'  # Specify the path and filename for the JSON file
-    with open(file_path, 'w') as json_file:
-        json.dump(kwargs, json_file)
 
     # Pickle z labels
     file_path = f'/users/bspiegel/data/bspiegel/extended-mnist/{dataset_name}/train_labels.pkl'  # Specify the path and filename for the pickle file
@@ -131,8 +110,8 @@ def generate(dataset_name, condition_a_label_filter_function, condition_b_label_
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Extended MNIST dataset generation tool.')
     parser.add_argument('--dataset_name', type=str, default='exclude13b', help='Name of the dataset to generate.', required=True)
-
     parser.add_argument('--exclude', type=list, default=None, help='List of digits to exclude from the training dataset and test a dataset, to be put into the test b dataset.', required=True)
+
     parser.add_argument('--duplicate_digits', type=bool, default=False, help='Allow duplicate digits in the same image.', required=False)
     parser.add_argument('--max_iou', type=float, default=0.1, help='Maximum IOU between digits.', required=False)
     parser.add_argument('--num_classes', type=int, default=5, help='Number of classes to generate.', required=False)
@@ -157,18 +136,18 @@ if __name__ == "__main__":
     #     'duplicate_digits': False
     # }
 
-    non_json_kwargs = {
-        'condition_a_label_filter_function': label_filter_no_13,
-        'condition_b_label_filter_function': label_filter_only_13
-    }
+    non_json_kwargs = dict()
 
     # Generate the appropriate filter functions according to the exclude list
     if args['exclude'] is not None:
         args['exclude'] = [int(x) for x in args['exclude']]
-        print(args['exclude'])
-        non_json_kwargs['condition_a_label_filter_function'] = label_filter_fn_generator(args['exclude'])
-        non_json_kwargs['condition_b_label_filter_function'] = label_filter_fn_generator(args['exclude'])
+        non_json_kwargs['condition_a_label_filter_function'] = label_filter_fn_generator(exclude=args['exclude'])
+        non_json_kwargs['condition_b_label_filter_function'] = label_filter_fn_generator(include=args['exclude'])
+    else:
+        non_json_kwargs['condition_a_label_filter_function'] = lambda x: True
+        non_json_kwargs['condition_b_label_filter_function'] = lambda x: True
 
-    print(args)
-    print(args['dataset_name'], **non_json_kwargs, args)
+    # print(args)
+    # print(args['dataset_name'], non_json_kwargs)
+    generate(args['dataset_name'], **non_json_kwargs, kwargs=args)
     

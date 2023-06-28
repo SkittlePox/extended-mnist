@@ -1,0 +1,17 @@
+## SLURM PROLOG ###############################################################
+##    Job ID : 10299421
+##  Job Name : exem_mini_exclude01b
+##  Nodelist : gpu1403
+##      CPUs : 
+##  Mem/Node : 32768 MB
+## Directory : /oscar/home/bspiegel/extended-mnist/batch_scripts
+##   Job Started : Tue Jun 27 15:47:09 EDT 2023
+###############################################################################
+module: loading 'anaconda/2022.05'
+module: anaconda: "See https://docs.ccv.brown.edu/oscar/software/anaconda for potential issues on VNC and batch jobs"
+module: loading 'cuda/7.5.18'
+2023-06-27 15:47:12.773836: I tensorflow/tsl/cuda/cudart_stub.cc:28] Could not find cuda drivers on your machine, GPU will not be used.
+2023-06-27 15:47:12.832421: I tensorflow/tsl/cuda/cudart_stub.cc:28] Could not find cuda drivers on your machine, GPU will not be used.
+2023-06-27 15:47:12.833093: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2023-06-27 15:47:14.612722: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
