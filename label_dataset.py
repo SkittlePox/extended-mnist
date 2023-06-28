@@ -11,7 +11,7 @@ def generate_propositions(digits_in_image):
 
     propositions = []
 
-    for proposition in nltk.generate(grammar, depth=5):
+    for proposition in nltk.parse.generate.generate(grammar, depth=5):
         propositions.append(' '.join(proposition))
 
     true_propositions = []
